@@ -20,7 +20,7 @@ pasta_modelos = 'C:\\gerar_carimbos\\modelos'
 #pasta_carimbo = 'C:\\carimbos_res\\carimbos'
 pasta_destino = '\\g19mscp28\agroamigo\AMBIENTE\CONFORMIDADE\Time Conformidade\Renegociação\Carimbo_GED'
 
-arquivo_excel = os.path.join(pasta,'lista_clientes.xlsx')
+arquivo_excel = os.path.join(pasta,'lista_clientes_usual.xlsx')
 arquivo_usual = os.path.join(pasta_modelos,'carimbo_usual.docx')
 arquivo_investimento = os.path.join(pasta_modelos,'carimbo_res_inv.docx')
 arquivo_custeio = os.path.join(pasta_modelos,'carimbo_res_cus.docx')
@@ -124,8 +124,6 @@ for index, row in df.iterrows():
          os.mkdir(nome_pasta_dia)     
     if not os.path.isdir(nome_pasta_cliente):
          os.mkdir(nome_pasta_cliente)
-    
-    
 
     # Substituir palavras-chave no modelo do Word
     for i, paragraph in enumerate(modelo_word.paragraphs):
@@ -143,7 +141,7 @@ for index, row in df.iterrows():
                 modelo_word.paragraphs[4].text = modelo_word.paragraphs[4].text.replace('#VALOR_RENEGOCIADO', f'R$ {valor_renegociado_f}')
                 modelo_word.paragraphs[4].text = modelo_word.paragraphs[4].text.replace('#bonus', text_bonus)
 
-                modelo_word.paragraphs[41].text = modelo_word.paragraphs[41].text.replace('#LOCAL_DATA', local_data) 
+                modelo_word.paragraphs[39].text = modelo_word.paragraphs[39].text.replace('#LOCAL_DATA', local_data) 
                 if n_parcelas == 1:
                     modelo_word.paragraphs[3].text = modelo_word.paragraphs[3].text.replace(' a primeira', '')            
             #valor das parcelas
@@ -175,7 +173,7 @@ for index, row in df.iterrows():
                              modelo_word._element.body.remove(modelo_word.paragraphs[p]._element)
             elif n_parcelas > 1:
                     parcela = 1
-                    for p in range(7,38):
+                    for p in range(7,36):
                         parcela = parcela + 1                        
                         try:
                             paragraph_atual = modelo_word.paragraphs[p]
@@ -200,10 +198,10 @@ for index, row in df.iterrows():
                                                 if n_parcelas < 11:
                                                     remover = 18
                                                 elif n_parcelas > 11:
-                                                    remover = 18 - (n_parcelas-11)
-                                                for r in range(1,remover):
-                                                    if '#REEMBOLSO' in modelo_word.paragraphs[18].text:
-                                                        modelo_word._element.body.remove(modelo_word.paragraphs[18]._element)                                           
+                                                    remover = 35 - (18 - (n_parcelas-11)) 
+                                                for r in range(remover,35):
+                                                    if '#REEMBOLSO' in modelo_word.paragraphs[remover].text:
+                                                        modelo_word._element.body.remove(modelo_word.paragraphs[remover]._element)                                           
                                                 
                                     reembolso_atual = f'Em {data_atual_f} R$ {valor_demais_parcelas}'
                                     paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', reembolso_atual)
@@ -222,19 +220,20 @@ for index, row in df.iterrows():
                                             reembolso_atual = f'Em {data_atual_f} R$ {valor_ultima_parcela}'
                                             paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', reembolso_atual)
                                             continue
-                                    elif parcela > n_parcelas and i ==0:
-                                            paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', '')
-                                            if parcela > 11:
+                                    elif parcela < n_parcelas and i ==0:
+                                            reembolso_atual = f'Em {data_atual_f} R$ {valor_demais_parcelas}'
+                                            paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', reembolso_atual)
+                                    elif parcela > n_parcelas and i ==0:                                            
+                                            if parcela < 11:
+                                                 paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', '')
+                                            elif parcela > 11:
                                                 if n_parcelas < 11:
                                                     remover = 18
                                                 elif n_parcelas > 11:
-                                                    remover = 18 - (n_parcelas-11)
-                                                for r in range(1,remover):
-                                                    if '#REEMBOLSO' in modelo_word.paragraphs[18].text:
-                                                        modelo_word._element.body.remove(modelo_word.paragraphs[18]._element)                                           
-                                                
-                                    reembolso_atual = f'Em {data_atual_f} R$ {valor_demais_parcelas}'
-                                    paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', reembolso_atual)        
+                                                    remover = 35 - (18 - (n_parcelas-11)) 
+                                                for r in range(remover,35):
+                                                    if '#REEMBOLSO' in modelo_word.paragraphs[remover].text:
+                                                        modelo_word._element.body.remove(modelo_word.paragraphs[remover]._element)        
                                       
                             elif periodicidade == 'ANUAL':                                        
                                         data_atual = f'{data_parcela1[:6]}{int(data_parcela1[6:]) + (parcela - 1)}'
@@ -242,18 +241,21 @@ for index, row in df.iterrows():
                                             reembolso_atual = f'Em {data_atual} R$ {valor_ultima_parcela}'
                                             paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', reembolso_atual)
                                             continue
-                                        elif parcela > n_parcelas and i ==0:
-                                            paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', '')
-                                            if parcela > 11:
+                                        elif parcela < n_parcelas and i ==0:
+                                            reembolso_atual = f'Em {data_atual} R$ {valor_demais_parcelas}'
+                                            paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', reembolso_atual)
+                                        elif parcela > n_parcelas and i ==0:                                            
+                                            if parcela < 11:
+                                                 paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', '')
+                                            elif parcela > 11:
                                                 if n_parcelas < 11:
                                                     remover = 18
                                                 elif n_parcelas > 11:
-                                                    remover = 18 - (n_parcelas-11)
-                                                for r in range(1,remover):
-                                                    if '#REEMBOLSO' in modelo_word.paragraphs[18].text:
-                                                        modelo_word._element.body.remove(modelo_word.paragraphs[18]._element)                     
-                                        reembolso_atual = f'Em {data_atual} R$ {valor_demais_parcelas}'
-                                        paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', reembolso_atual)
+                                                    remover = 35 - (18 - (n_parcelas-11)) 
+                                                for r in range(remover,35):
+                                                    if '#REEMBOLSO' in modelo_word.paragraphs[remover].text:
+                                                        modelo_word._element.body.remove(modelo_word.paragraphs[remover]._element)                     
+                                        
                         except:
                             paragraph_atual.text = paragraph_atual.text.replace(f'#REEMBOLSO{parcela}', '')
     # Modificar a fonte de todos os estilos no documento
